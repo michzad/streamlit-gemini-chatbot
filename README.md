@@ -69,7 +69,7 @@ python -m venv env
    ```
 <a name="usage"></a>
 ## Usage
-![Screenshot two](images/s1.png)
+![Screenshot two](images/s2.png)
 1. Run the Streamlit file app:
 
    ```bash
