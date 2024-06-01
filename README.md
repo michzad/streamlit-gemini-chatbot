@@ -10,12 +10,15 @@ This project is a very simple chatbot built using Streamlit as the interface and
 2. [Features](#features)
 3. [Installation](#installation)
 4. [Usage](#usage)
-5. [Why?](#whyanything)
+5. [Limitations](#limitations)
+6. [Why?](#whyanything)
 
 <a name="introduction"></a>
 ## Introduction
 
 This project aims to create a user-friendly chatbot interface using Streamlit and the Gemini API. Users can interact with the chatbot by entering prompts, and the chatbot responds using the Gemini API. The conversation history is maintained throughout the session, providing a seamless user experience.
+
+![Screenshot one](images/s1.png)
 
 <a name="features"></a>
 ## Features
@@ -66,6 +69,7 @@ python -m venv env
    ```
 <a name="usage"></a>
 ## Usage
+![Screenshot two](images/s1.png)
 1. Run the Streamlit file app:
 
    ```bash
@@ -75,6 +79,18 @@ python -m venv env
 3. Enter your Gemini API key in the sidebar to establish the connection.
 4. Enter prompts in the chat input box to interact with the chatbot.
 5. View the conversation history in the app interface.
+
+<a name="limitations"></a>
+## Limitations
+Unfortunately, much like anything in life, there is limits on free stuff :)
+Gemini's API [(Free Tier)](https://ai.google.dev/pricing) has the following rate limits
+
+1. 15 RPM (requests per minute)
+2. 1 million TPM (tokens per minute)
+3. 1,500 RPD (requests per day)
+
+Streamlit also has its fair share of limits such as cap on daily number of users as well as deployments going to sleep
+when not visited regulary.
 
 <a name="whyanything"></a>
 ## Why?

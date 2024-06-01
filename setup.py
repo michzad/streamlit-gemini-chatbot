@@ -1,15 +1,14 @@
 from setuptools import setup, find_packages
 
+with open('requirements.txt') as f:
+    requirements = f.read().splitlines()
+
 setup(
     name='streamlit-gemini-chatbot',
     version='0.1',
     packages=find_packages(),
     include_package_data=True,
-    install_requires=[
-        'os',
-        'streamlit',
-        'google-generativeai',
-    ],
+    install_requires=requirements,
     author='Sambonic',
     description='A simple chatbot using Streamlit and Gemini API',
     long_description=open('README.md').read(),
