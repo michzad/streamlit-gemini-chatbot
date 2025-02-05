@@ -8,8 +8,8 @@ if 'message_history' not in st.session_state:
 message_history = st.session_state['message_history']
 
 # Titles
-st.title("Hello, Streamlit!")
-st.write("This is my first attempt at creating a simple chatbot using gemini API and streamlit :D")
+st.title("LeanMedic - aplikacja testowa")
+st.write("Wywiad medyczny ze wsparciem sztucznej inteligencji")
 
 # Insert API key to get started
 with st.sidebar:
