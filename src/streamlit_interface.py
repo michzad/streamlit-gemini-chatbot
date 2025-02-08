@@ -9,23 +9,27 @@ st.set_page_config(layout="wide")
 if 'message_history' not in st.session_state:
     st.session_state['message_history'] = []
 
+if 'last_message' not in st.session_state:
+    st.session_state['last_message'] = {
+        'followUpQuestions': [],
+        'diagnosticProcedures': [],
+        'summary': 'Pusto',
+        'severity_index': ''
+    }
+
 # ============= HEADER SECTION =============
 def render_header():
     st.title("LeanMedic - aplikacja testowa")
-    st.write("Wywiad medyczny ze wsparciem sztucznej inteligencji")
+    # st.write("Wywiad medyczny ze wsparciem sztucznej inteligencji !")
 
 # ============= BODY SECTION =============
 def render_body():
     # Create two columns with adjusted ratio (3:2 instead of 2:1)
-    col1, col2 = st.columns([3, 2])
+
+    render_chat()
+    render_questions()
     
-    with col1:
-        # Chat interface
-        render_chat()
-    
-    with col2:
-        # Questions section
-        render_questions()
+
 
     # Render sidebar (outside columns)
     render_sidebar()
