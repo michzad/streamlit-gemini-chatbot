@@ -1,49 +1,97 @@
 import os
 import google.generativeai as genai
+import json
 
-# Set up environment variable with the API key if you running locally
-#genai.configure(api_key=os.environ["GOOGLE_API_KEY"])
+def get_medical_model():
 
-# Gemini settings to manipulate a desired outcome
-generation_config = {
-  "temperature": 1,
-  "top_p": 0.95,
-  "top_k": 64,
-  "max_output_tokens": 8192,
-  "response_mime_type": "text/plain",
-}
-textsi_1 = """You are a healthcare assistant conducting a triage assessment in Polish language. Your goal is to use the SAMPLE history-taking method to gather detailed information about a patient's symptoms. Focus on probing for specifics that will help identify the potential underlying causes. After the assessment, provide two outputs:
-Triage Summary: A concise summary of the patient's presentation using professional healthcare language. This summary should highlight the key symptoms and findings from your SAMPLE assessment.
-Potential Reasons List: A list of possible medical conditions or factors that could be causing the patient's symptoms. These should be presented in clear, understandable language that a patient might use.
-For example, instead of \"acute myocardial infarction,\" suggest \"heart attack or blockage of an artery to the heart\".
-Remember to ask follow-up questions to clarify any vague answers and ensure you have a complete picture. Start your interaction by saying: 'Hello, I'm here to help you today. Can you tell me what's bringing you in?"""
+  # System instructions
+  system_prompt = """
+  You are a medical diagnostic tool, your role is to analise patient-medic conversation
+  then propose follow-up questions to pinpoint the diagnosis.
+  After every chat entry respond with a list of possible diagnosis with probabbilities in,
+  a follow-up questions with probabbilities of "need to ask" that a medic should ask a patient,
+  and a list of diagnostic procedures needed to be performed on a patient with probabbilities of need,
+  and a medical summary of the conversation so far,
+  and emergency severity index, a color, accourding to ESI Algorithm,
+  all in JSON format.
+  Rozmawiaj po polsku.
+  """
+
+  safety_settings = [
+    {
+      "category": "HARM_CATEGORY_HARASSMENT",
+      "threshold": "BLOCK_MEDIUM_AND_ABOVE",
+    },
+    {
+      "category": "HARM_CATEGORY_HATE_SPEECH",
+      "threshold": "BLOCK_MEDIUM_AND_ABOVE",
+    },
+    {
+      "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+      "threshold": "BLOCK_MEDIUM_AND_ABOVE",
+    },
+    {
+      "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
+      "threshold": "BLOCK_MEDIUM_AND_ABOVE",
+    },
+  ]
+  
+  # Create model with system instructions
+  model = genai.GenerativeModel(
+    model_name='gemini-1.5-flash',
+    safety_settings=safety_settings,
+    system_instruction=system_prompt,
+    generation_config = {
+      "max_output_tokens": 8192,
+      "response_mime_type": "application/json",
+      "response_schema": {
+        "type": "object",
+        "required": ["possibleDiagnoses", "diagnosticProcedures", "followUpQuestions"],
+        "properties": {
+          "possibleDiagnoses": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["diagnosis", "probability"],
+              "properties": {
+                "diagnosis": {"type": "string"},
+                "probability": {"type": "number"}
+              }
+            }
+          },
+          "diagnosticProcedures": {
+            "type": "array", 
+            "items": {
+              "type": "object",
+              "required": ["procedure", "probability"],
+              "properties": {
+                "procedure": {"type": "string"},
+                "probability": {"type": "number"}
+              }
+            }
+          },
+          "followUpQuestions": {
+            "type": "array",
+            "items": {
+              "type": "object", 
+              "required": ["question", "probability"],
+              "properties": {
+                "question": {"type": "string"},
+                "probability": {"type": "number"}
+              }
+            }
+          },
+          "summary": {"type": "string"},
+          "severity_index": {"type": "string"}
+        }
+      }
+    }
+  )
+  
+  return model
 
 
-safety_settings = [
-  {
-    "category": "HARM_CATEGORY_HARASSMENT",
-    "threshold": "BLOCK_MEDIUM_AND_ABOVE",
-  },
-  {
-    "category": "HARM_CATEGORY_HATE_SPEECH",
-    "threshold": "BLOCK_MEDIUM_AND_ABOVE",
-  },
-  {
-    "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-    "threshold": "BLOCK_MEDIUM_AND_ABOVE",
-  },
-  {
-    "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
-    "threshold": "BLOCK_MEDIUM_AND_ABOVE",
-  },
-]
-
-model = genai.GenerativeModel(
-  model_name="gemini-1.5-flash",
-  safety_settings = safety_settings,
-  generation_config=generation_config,
-  system_instruction=textsi_1
-)
+model = get_medical_model()
 
 chat_session = model.start_chat(
   history=[
@@ -64,7 +112,7 @@ def establish_api(key:str)->str:
   genai.configure(api_key=key)
   return "Key inserted succesfully!"
 
-def send_prompt(prompt: str) -> str:
+def send_prompt(prompt: str) -> object:
   """
     Sends a user prompt to the Gemini API and retrieves the response.
     *Cracks knuckles* That's a job well done for today..
@@ -79,4 +127,9 @@ def send_prompt(prompt: str) -> str:
     response = chat_session.send_message(prompt)
   except:
     return "Sorry, but you need to insert API key to start conversation"
-  return response.text
+  
+  jsonText = response.text
+  try:
+    return json.loads(jsonText)
+  except json.JSONDecodeError:
+    return {"error": "Failed to parse JSON response"}

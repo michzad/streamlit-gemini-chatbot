@@ -6,7 +6,7 @@ def render_sidebar():
     with st.sidebar:
         if "api_key" not in st.session_state:
             st.title("Insert API Key!")
-            api_key = st.text_input("")
+            api_key = st.text_input('');
             if api_key:
                 st.session_state["api_key"] = api_key
                 st.write(establish_api(api_key))
